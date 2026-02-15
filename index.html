@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Dance Event</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #ffffff;
+    }
+
+    .section {
+      padding: 60px 20px;
+    }
+
+    h1 {
+      font-size: 32px;
+    }
+
+    .counter {
+      font-size: 22px;
+      margin: 10px 0;
+    }
+
+    button {
+      padding: 15px 25px;
+      font-size: 18px;
+      border: none;
+      border-radius: 12px;
+      background: black;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      opacity: 0.8;
+    }
+
+    form {
+      max-width: 400px;
+      margin: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    input {
+      padding: 12px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ===== EDIT THESE VALUES ONLY ===== -->
+  <script>
+    let attendees = 187;   // change manually
+    let spotsLeft = 13;    // change manually
+  </script>
+  <!-- =================================== -->
+
+  <div class="section">
+    <h3>Limited Spots Available</h3>
+    <h1>Salsa Night 🔥</h1>
+    <p>March 28, 2026 | Downtown Studio</p>
+
+    <div class="counter" id="attendeeText"></div>
+    <div class="counter" id="spotsText"></div>
+
+    <button onclick="attend()">I Will Attend</button>
+  </div>
+
+  <div class="section" id="formSection">
+    <h2>Confirm Your Spot</h2>
+
+    <form action="YOUR_GOOGLE_SCRIPT_URL" method="POST">
+      <input name="name" placeholder="Full Name" required>
+      <input name="age" placeholder="Age" required>
+      <input name="instagram" placeholder="Instagram Username" required>
+      <input name="phone" placeholder="Phone Number" required>
+      <button type="submit">Confirm My Spot</button>
+    </form>
+  </div>
+
+  <script>
+    function updateUI() {
+      document.getElementById("attendeeText").innerText =
+        attendees + " people are already attending";
+      document.getElementById("spotsText").innerText =
+        "Only " + spotsLeft + " spots left";
+    }
+
+    function attend() {
+      attendees++;
+      spotsLeft--;
+      updateUI();
+      document.getElementById("formSection").scrollIntoView({
+        behavior: "smooth"
+      });
+    }
+
+    updateUI();
+  </script>
+
+</body>
+</html>
