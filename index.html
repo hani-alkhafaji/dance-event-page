@@ -1,4 +1,10 @@
 <!DOCTYPE html>
+<!--
+  EVENT REGISTRATION PAGE
+  - You can edit: event title (search for "Register For Latin Party"), initial numbers (187, 184, 34, 31) in the script.
+  - To add profile images: replace the <div class="circle"> content with <img src="YOUR_IMAGE_URL" alt=""> for going-img-1,2,3 and interesting-img-1,2,3.
+  - Google Sheets: This page cannot send data to Google Sheets by itself. Use Google Apps Script (Deploy as Web app) and set the URL below, or use a form service like Formspree.
+-->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -12,7 +18,7 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background-color: #0066FF;
             color: #FFFFFF;
             min-height: 100vh;
@@ -24,124 +30,123 @@
 
         .container {
             width: 100%;
-            max-width: 400px;
+            max-width: 420px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 20px;
         }
 
+        /* Event Title - you can edit this in the HTML */
         .event-title {
-            font-size: 28px;
+            font-size: 26px;
             font-weight: bold;
             text-align: center;
-            margin-top: 20px;
-            margin-bottom: 10px;
+            margin-top: 16px;
+            margin-bottom: 20px;
             color: #FFFFFF;
         }
 
-        .buttons-container {
+        /* Two buttons row */
+        .buttons-row {
             display: flex;
-            gap: 15px;
+            gap: 16px;
             width: 100%;
             justify-content: center;
-            margin-top: 20px;
+            margin-bottom: 12px;
         }
 
-        .action-button {
+        .btn-action {
             flex: 1;
+            max-width: 180px;
             background-color: #00C896;
             color: #FFFFFF;
             border: none;
             border-radius: 12px;
-            padding: 16px 24px;
-            font-size: 18px;
+            padding: 14px 20px;
+            font-size: 17px;
             font-weight: bold;
             cursor: pointer;
-            transition: transform 0.1s;
-            max-width: 160px;
+            transition: transform 0.15s;
         }
 
-        .action-button:active {
-            transform: scale(0.95);
+        .btn-action:active {
+            transform: scale(0.97);
         }
 
-        .images-section {
+        /* Two columns: Going (left) | Interesting (right) */
+        .two-columns {
             display: flex;
-            gap: 20px;
+            gap: 24px;
             width: 100%;
             justify-content: center;
-            margin-top: 20px;
+            margin-top: 8px;
         }
 
-        .images-column {
+        .column {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 10px;
             flex: 1;
-            max-width: 150px;
+            max-width: 160px;
         }
 
-        .column-counter {
-            text-align: center;
-            font-size: 16px;
+        /* Counter above the 3 images */
+        .counter-above {
+            font-size: 15px;
             font-weight: bold;
             color: #FFFFFF;
-            margin-bottom: 5px;
+            text-align: center;
+            margin-bottom: 10px;
         }
 
-        .profile-images-vertical {
+        /* 3 vertical circles */
+        .profile-stack {
             display: flex;
             flex-direction: column;
             gap: 10px;
             width: 100%;
         }
 
-        .profile-circle {
+        .circle {
             width: 100%;
             aspect-ratio: 1;
             border-radius: 50%;
-            background-color: rgba(255, 255, 255, 0.2);
-            border: 3px solid rgba(255, 255, 255, 0.3);
+            background-color: rgba(255,255,255,0.25);
+            border: 3px solid rgba(255,255,255,0.4);
             overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
-            cursor: pointer;
-            transition: transform 0.2s;
         }
 
-        .profile-circle:hover {
-            transform: scale(1.05);
-        }
-
-        .profile-circle img {
+        .circle img {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
 
-        .profile-circle-placeholder {
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 12px;
+        .circle-placeholder {
+            color: rgba(255,255,255,0.6);
+            font-size: 11px;
             text-align: center;
-            padding: 10px;
+            padding: 8px;
         }
 
-        .column-bottom-counter {
-            text-align: center;
+        /* Counter below the 3 images (e.g. 184+ / 31+) */
+        .counter-below {
             font-size: 20px;
             font-weight: bold;
             color: #FFFFFF;
-            margin-top: 5px;
+            text-align: center;
+            margin-top: 10px;
         }
 
-        .form-container {
+        /* Form section */
+        .form-section {
             width: 100%;
-            max-width: 400px;
-            margin-top: 30px;
-            display: block;
+            max-width: 420px;
+            margin-top: 36px;
+            padding-bottom: 40px;
         }
 
         .form-field {
@@ -151,13 +156,13 @@
             border-radius: 12px;
             padding: 16px;
             font-size: 16px;
-            color: #333333;
-            margin-bottom: 15px;
+            color: #333;
+            margin-bottom: 14px;
             font-family: inherit;
         }
 
         .form-field::placeholder {
-            color: #666666;
+            color: #666;
         }
 
         .form-field:focus {
@@ -165,10 +170,39 @@
             outline-offset: 2px;
         }
 
-        .optional-label {
+        .optional-small {
             font-size: 12px;
-            color: rgba(255, 255, 255, 0.7);
-            margin-bottom: 5px;
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .fake-upload {
+            width: 100%;
+            background-color: #E0E0E0;
+            border: none;
+            border-radius: 12px;
+            padding: 16px;
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 14px;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .fake-upload:hover {
+            background-color: #d5d5d5;
+        }
+
+        .error-msg {
+            display: none;
+            color: #ff4444;
+            font-size: 14px;
+            margin-top: -8px;
+            margin-bottom: 12px;
+        }
+
+        .error-msg.show {
             display: block;
         }
 
@@ -178,33 +212,13 @@
         }
 
         input[type="date"].form-field {
-            color: #333333;
+            color: #333;
         }
 
-        .file-upload-label {
-            display: block;
+        /* Blue Send button */
+        .btn-send {
             width: 100%;
-            background-color: #E0E0E0;
-            border-radius: 12px;
-            padding: 16px;
-            font-size: 16px;
-            color: #666666;
-            margin-bottom: 15px;
-            cursor: pointer;
-            text-align: center;
-        }
-
-        .file-upload-label:hover {
-            background-color: #D0D0D0;
-        }
-
-        input[type="file"] {
-            display: none;
-        }
-
-        .submit-button {
-            width: 100%;
-            background-color: #50E3C2;
+            background-color: #2196F3;
             color: #FFFFFF;
             border: none;
             border-radius: 12px;
@@ -212,67 +226,232 @@
             font-size: 18px;
             font-weight: bold;
             cursor: pointer;
-            margin-top: 10px;
-            transition: transform 0.1s;
+            margin-top: 12px;
+            transition: opacity 0.2s;
+            position: relative;
         }
 
-        .submit-button:active {
-            transform: scale(0.98);
+        .btn-send:disabled {
+            cursor: not-allowed;
+            opacity: 0.8;
         }
 
-        .success-message {
+        .spinner {
+            display: none;
+            width: 28px;
+            height: 28px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 8px;
+        }
+
+        .spinner.show {
+            display: block;
+        }
+
+        .btn-send .btn-text {
+            display: block;
+        }
+
+        .btn-send.loading .btn-text {
+            display: none;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .success-msg {
             display: none;
             text-align: center;
             padding: 20px;
-            background-color: rgba(0, 200, 150, 0.3);
+            background-color: rgba(0,200,150,0.3);
             border-radius: 12px;
-            margin-top: 20px;
+            margin-top: 16px;
         }
 
-        .success-message.show {
+        .success-msg.show {
             display: block;
         }
 
         @media (max-width: 480px) {
-            .event-title {
-                font-size: 24px;
-            }
-            .action-button {
-                font-size: 16px;
-                padding: 14px 20px;
-            }
-            .images-section {
-                gap: 15px;
-            }
+            .event-title { font-size: 22px; }
+            .btn-action { font-size: 15px; padding: 12px 16px; }
+            .two-columns { gap: 16px; }
+            .column { max-width: 140px; }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1 class="event-title" contenteditable="true">Register For Latin Party</h1>
+        <!-- Edit event name here -->
+        <h1 class="event-title">Register For Latin Party</h1>
 
-        <div class="buttons-container">
-            <button class="action-button" onclick="handleGoingClick()">Going</button>
-            <button class="action-button" onclick="handleInterestingClick()">Interesting</button>
+        <div class="buttons-row">
+            <button type="button" class="btn-action" id="btn-going">Going</button>
+            <button type="button" class="btn-action" id="btn-interesting">Interesting</button>
         </div>
 
-        <div class="images-section">
-            <div class="images-column">
-                <div class="column-counter">
-                    <span id="going-count">187</span> People Going
+        <div class="two-columns">
+            <!-- Left column: Going -->
+            <div class="column">
+                <div class="counter-above">
+                    <span id="going-num">187</span> People Going
                 </div>
-                <div class="profile-images-vertical">
-                    <div class="profile-circle">
-                        <div class="profile-circle-placeholder">Add Image</div>
+                <div class="profile-stack">
+                    <div class="circle" id="going-img-1">
+                        <span class="circle-placeholder">Add Image</span>
                     </div>
-                    <div class="profile-circle">
-                        <div class="profile-circle-placeholder">Add Image</div>
+                    <div class="circle" id="going-img-2">
+                        <span class="circle-placeholder">Add Image</span>
                     </div>
-                    <div class="profile-circle">
-                        <div class="profile-circle-placeholder">Add Image</div>
+                    <div class="circle" id="going-img-3">
+                        <span class="circle-placeholder">Add Image</span>
                     </div>
-                </di
-...
+                </div>
+                <div class="counter-below">
+                    <span id="going-plus">184</span>+
+                </div>
+            </div>
 
-Let me reevaluate and take a different approach.
+            <!-- Right column: Interesting -->
+            <div class="column">
+                <div class="counter-above">
+                    <span id="interesting-num">34</span> People Interesting
+                </div>
+                <div class="profile-stack">
+                    <div class="circle" id="interesting-img-1">
+                        <span class="circle-placeholder">Add Image</span>
+                    </div>
+                    <div class="circle" id="interesting-img-2">
+                        <span class="circle-placeholder">Add Image</span>
+                    </div>
+                    <div class="circle" id="interesting-img-3">
+                        <span class="circle-placeholder">Add Image</span>
+                    </div>
+                </div>
+                <div class="counter-below">
+                    <span id="interesting-plus">31</span>+
+                </div>
+            </div>
+        </div>
 
+        <section class="form-section" id="form-section">
+            <form id="reg-form" onsubmit="return handleSubmit(event)">
+                <input type="text" class="form-field" id="fullname" placeholder="Your Full name?" required>
+
+                <label class="optional-small">(optionally)</label>
+                <div type="button" class="fake-upload" id="fake-upload" role="button" tabindex="0">
+                    click to add Your image here
+                </div>
+                <p class="error-msg" id="upload-error">This device does not support adding photos.</p>
+
+                <input type="date" class="form-field" id="birthday" placeholder="Your birthday date?" required>
+
+                <input type="text" class="form-field" id="instagram" placeholder="Your Instagram Username?" required>
+
+                <textarea class="form-field" id="reason" placeholder="why would you like to join?" rows="3"></textarea>
+
+                <button type="submit" class="btn-send" id="btn-send">
+                    <span class="spinner" id="spinner"></span>
+                    <span class="btn-text">send</span>
+                </button>
+            </form>
+
+            <div class="success-msg" id="success-msg">
+                Thank you! Your registration has been submitted.
+            </div>
+        </section>
+    </div>
+
+    <script>
+        (function() {
+            // Initial values – you can edit these in the HTML/script
+            var state = {
+                goingNum: 187,
+                goingPlus: 184,
+                interestingNum: 34,
+                interestingPlus: 31
+            };
+
+            function updateDisplay() {
+                document.getElementById('going-num').textContent = state.goingNum;
+                document.getElementById('going-plus').textContent = state.goingPlus;
+                document.getElementById('interesting-num').textContent = state.interestingNum;
+                document.getElementById('interesting-plus').textContent = state.interestingPlus;
+            }
+
+            function scrollToForm() {
+                document.getElementById('form-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+
+            function onGoing() {
+                state.goingNum += 1;
+                state.goingPlus += 1;
+                updateDisplay();
+                setTimeout(scrollToForm, 2000);
+            }
+
+            function onInteresting() {
+                state.interestingNum += 1;
+                state.interestingPlus += 1;
+                updateDisplay();
+                setTimeout(scrollToForm, 2000);
+            }
+
+            document.getElementById('btn-going').addEventListener('click', onGoing);
+            document.getElementById('btn-interesting').addEventListener('click', onInteresting);
+
+            // Fake upload: show red message only
+            document.getElementById('fake-upload').addEventListener('click', function() {
+                var el = document.getElementById('upload-error');
+                el.classList.add('show');
+                setTimeout(function() {
+                    el.classList.remove('show');
+                }, 4000);
+            });
+
+            // Submit: show spinner 2 seconds then success
+            window.handleSubmit = function(ev) {
+                ev.preventDefault();
+                var btn = document.getElementById('btn-send');
+                var spinner = document.getElementById('spinner');
+                var form = document.getElementById('reg-form');
+                var success = document.getElementById('success-msg');
+
+                btn.classList.add('loading');
+                btn.disabled = true;
+                spinner.classList.add('show');
+
+                var data = {
+                    fullName: document.getElementById('fullname').value,
+                    birthday: document.getElementById('birthday').value,
+                    instagram: document.getElementById('instagram').value,
+                    reason: document.getElementById('reason').value
+                };
+                console.log('Registration:', data);
+
+                // Optional: send to Google Apps Script Web App (replace with your URL)
+                // var scriptUrl = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec';
+                // fetch(scriptUrl, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) }).catch(function() {});
+
+                setTimeout(function() {
+                    spinner.classList.remove('show');
+                    btn.classList.remove('loading');
+                    btn.disabled = false;
+                    form.style.display = 'none';
+                    success.classList.add('show');
+                    form.reset();
+                    document.getElementById('upload-error').classList.remove('show');
+                }, 2000);
+
+                return false;
+            };
+
+            updateDisplay();
+        })();
+    </script>
+</body>
+</html>
