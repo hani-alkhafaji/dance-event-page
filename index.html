@@ -376,6 +376,11 @@
                 interestingPlus: 31
             };
 
+            // Track if the current visitor has selected Going / Interesting
+            // Clicking again will undo their selection (toggle)
+            var goingSelected = false;
+            var interestingSelected = false;
+
             function updateDisplay() {
                 document.getElementById('going-num').textContent = state.goingNum;
                 document.getElementById('going-plus').textContent = state.goingPlus;
@@ -388,17 +393,41 @@
             }
 
             function onGoing() {
-                state.goingNum += 1;
-                state.goingPlus += 1;
-                updateDisplay();
-                setTimeout(scrollToForm, 2000);
+                // Toggle selection for Going
+                goingSelected = !goingSelected;
+
+                if (goingSelected) {
+                    // User just selected Going: increase counts
+                    state.goingNum += 1;
+                    state.goingPlus += 1;
+                    updateDisplay();
+                    // Scroll after 2 seconds so they see the change
+                    setTimeout(scrollToForm, 2000);
+                } else {
+                    // User unselected Going: decrease counts back
+                    state.goingNum -= 1;
+                    state.goingPlus -= 1;
+                    updateDisplay();
+                }
             }
 
             function onInteresting() {
-                state.interestingNum += 1;
-                state.interestingPlus += 1;
-                updateDisplay();
-                setTimeout(scrollToForm, 2000);
+                // Toggle selection for Interesting
+                interestingSelected = !interestingSelected;
+
+                if (interestingSelected) {
+                    // User just selected Interesting: increase counts
+                    state.interestingNum += 1;
+                    state.interestingPlus += 1;
+                    updateDisplay();
+                    // Scroll after 2 seconds so they see the change
+                    setTimeout(scrollToForm, 2000);
+                } else {
+                    // User unselected Interesting: decrease counts back
+                    state.interestingNum -= 1;
+                    state.interestingPlus -= 1;
+                    updateDisplay();
+                }
             }
 
             document.getElementById('btn-going').addEventListener('click', onGoing);
