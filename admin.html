@@ -74,9 +74,8 @@
 
     <script>
         (function() {
-            // ========== SET THESE TO MATCH YOUR APPS SCRIPT ==========
-            var CONFIG_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwaVksAPzPccOyjzXkISkl-87iBpnEdfQXPu6QVASQgoS_Fgo_Nk81g3bdsRtfK446F-w/exec';
-            var ADMIN_PASSWORD = '7602';  // Same as adminSecret in Apps Script
+            var CONFIG_API = '/api/config';
+            var ADMIN_PASSWORD = '7602';
 
             var loginBox = document.getElementById('login-box');
             var adminPanel = document.getElementById('admin-panel');
@@ -114,17 +113,18 @@
 
             function loadConfig() {
                 saveBtn.disabled = true;
-                fetch(CONFIG_SCRIPT_URL)
+                fetch(CONFIG_API)
                     .then(function(r) { return r.json(); })
                     .then(function(data) {
-                        document.getElementById('eventTitle').value = data.eventTitle || '';
-                        document.getElementById('goingNum').value = data.goingNum != null ? data.goingNum : 187;
-                        document.getElementById('goingPlus').value = data.goingPlus != null ? data.goingPlus : 184;
-                        document.getElementById('interestingNum').value = data.interestingNum != null ? data.interestingNum : 34;
-                        document.getElementById('interestingPlus').value = data.interestingPlus != null ? data.interestingPlus : 31;
+                        if (data && data.error) throw new Error(data.error);
+                        document.getElementById('eventTitle').value = (data && data.eventTitle) || '';
+                        document.getElementById('goingNum').value = (data && data.goingNum != null) ? data.goingNum : 187;
+                        document.getElementById('goingPlus').value = (data && data.goingPlus != null) ? data.goingPlus : 184;
+                        document.getElementById('interestingNum').value = (data && data.interestingNum != null) ? data.interestingNum : 34;
+                        document.getElementById('interestingPlus').value = (data && data.interestingPlus != null) ? data.interestingPlus : 31;
                     })
                     .catch(function() {
-                        showMsg('Could not load config. Check CONFIG_SCRIPT_URL and that your Config Apps Script is deployed.', true);
+                        showMsg('تعذّر تحميل الإعدادات. تأكد من CONFIG_SCRIPT_URL و ADMIN_SECRET في Vercel.', true);
                     })
                     .finally(function() { saveBtn.disabled = false; });
             }
@@ -141,31 +141,22 @@
                     interestingNum: parseInt(document.getElementById('interestingNum').value, 10) || 0,
                     interestingPlus: parseInt(document.getElementById('interestingPlus').value, 10) || 0
                 };
-                var iframe = document.getElementById('save-frame');
-                if (!iframe) {
-                    iframe = document.createElement('iframe');
-                    iframe.name = 'save-frame';
-                    iframe.id = 'save-frame';
-                    iframe.style.display = 'none';
-                    document.body.appendChild(iframe);
-                }
-                var form = document.createElement('form');
-                form.action = CONFIG_SCRIPT_URL;
-                form.method = 'POST';
-                form.target = '_blank';  // يفتح تبويباً جديداً لرؤية رد السكربت (OK / Forbidden / Invalid JSON). بعد التأكد غيّره إلى 'save-frame'
-                form.style.display = 'none';
-                var input = document.createElement('input');
-                input.name = 'data';
-                input.value = JSON.stringify(payload);
-                form.appendChild(input);
-                document.body.appendChild(form);
-                form.submit();
-                document.body.removeChild(form);
-                showMsg('Saved. Your event page will show the new title and numbers.');
-                saveBtn.disabled = false;
+                fetch(CONFIG_API, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                })
+                    .then(function(r) {
+                        if (r.ok) {
+                            showMsg('تم الحفظ. الصفحة الرئيسية ستظهر العنوان والأرقام الجديدة.');
+                            return;
+                        }
+                        return r.text().then(function(t) { showMsg(t || 'فشل الحفظ', true); });
+                    })
+                    .catch(function() { showMsg('خطأ في الشبكة. تأكد من Vercel ومتغيرات البيئة.', true); })
+                    .finally(function() { saveBtn.disabled = false; });
             });
         })();
     </script>
 </body>
 </html>
-
