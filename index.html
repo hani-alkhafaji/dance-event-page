@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <!--
   EVENT REGISTRATION PAGE
-  - Event title and numbers load from /api/config (same site). Admin saves to Google Sheet via API.
-  - To add profile images: upload to profiles folder on GitHub (going1.jpg, going2.jpg, etc.).
-  - Google Sheets: Use Google Apps Script Web App URL for form submissions.
+  - Event title and numbers load from /api/config.
+  - Going/Interesting: text turns red, then number updates after short delay; Going scrolls to form.
+  - Guest counter: + (adds 1, then 2, ... up to 10 per click) and - (subtract 1).
 -->
 <html lang="en">
 <head>
@@ -36,7 +36,6 @@
             align-items: center;
         }
 
-        /* Event Title - you can edit this in the HTML */
         .event-title {
             font-size: 26px;
             font-weight: bold;
@@ -46,7 +45,6 @@
             color: #FFFFFF;
         }
 
-        /* Two buttons row */
         .buttons-row {
             display: flex;
             gap: 16px;
@@ -73,7 +71,6 @@
             transform: scale(0.97);
         }
 
-        /* Two columns: Going (left) | Interesting (right) */
         .two-columns {
             display: flex;
             gap: 24px;
@@ -90,16 +87,19 @@
             max-width: 160px;
         }
 
-        /* Counter above the 3 images */
         .counter-above {
             font-size: 15px;
             font-weight: bold;
             color: #FFFFFF;
             text-align: center;
             margin-bottom: 10px;
+            transition: color 0.25s;
         }
 
-        /* 3 vertical circles */
+        .counter-above.highlight-red {
+            color: #ff4444;
+        }
+
         .profile-stack {
             display: flex;
             flex-direction: column;
@@ -132,7 +132,6 @@
             padding: 8px;
         }
 
-        /* Counter below the 3 images (e.g. 184+ / 31+) */
         .counter-below {
             font-size: 20px;
             font-weight: bold;
@@ -141,7 +140,6 @@
             margin-top: 10px;
         }
 
-        /* Form section */
         .form-section {
             width: 100%;
             max-width: 420px;
@@ -168,6 +166,53 @@
         .form-field:focus {
             outline: 2px solid #00C896;
             outline-offset: 2px;
+        }
+
+        .guest-counter-box {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 14px;
+            padding: 12px;
+            background-color: rgba(255,255,255,0.15);
+            border-radius: 12px;
+            width: 100%;
+        }
+
+        .guest-counter-box label {
+            font-size: 14px;
+            color: rgba(255,255,255,0.95);
+            margin-right: 8px;
+        }
+
+        .guest-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 10px;
+            background-color: #00C896;
+            color: #fff;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+            transition: opacity 0.2s;
+        }
+
+        .guest-btn:hover {
+            opacity: 0.9;
+        }
+
+        .guest-btn:active {
+            transform: scale(0.95);
+        }
+
+        .guest-num {
+            font-size: 20px;
+            font-weight: bold;
+            min-width: 36px;
+            text-align: center;
         }
 
         .optional-small {
@@ -215,7 +260,6 @@
             color: #333;
         }
 
-        /* Blue Send button */
         .btn-send {
             width: 100%;
             background-color: #2196F3;
@@ -286,7 +330,6 @@
 </head>
 <body>
     <div class="container">
-        <!-- Edit event name here -->
         <h1 class="event-title">Register For Latin Party</h1>
 
         <div class="buttons-row">
@@ -295,9 +338,8 @@
         </div>
 
         <div class="two-columns">
-            <!-- Left column: Going -->
             <div class="column">
-                <div class="counter-above">
+                <div class="counter-above" id="going-counter-above">
                     <span id="going-num">187</span> People Going
                 </div>
                 <div class="profile-stack">
@@ -316,9 +358,8 @@
                 </div>
             </div>
 
-            <!-- Right column: Interesting -->
             <div class="column">
-                <div class="counter-above">
+                <div class="counter-above" id="interesting-counter-above">
                     <span id="interesting-num">34</span> People Interesting
                 </div>
                 <div class="profile-stack">
@@ -342,9 +383,16 @@
             <form id="reg-form" onsubmit="return handleSubmit(event)">
                 <input type="text" class="form-field" id="fullname" placeholder="Your Full name?" required>
 
+                <div class="guest-counter-box">
+                    <label for="guest-num">Number of people coming with you</label>
+                    <button type="button" class="guest-btn" id="guest-minus" aria-label="Minus">−</button>
+                    <span class="guest-num" id="guest-num">0</span>
+                    <button type="button" class="guest-btn" id="guest-plus" aria-label="Plus">+</button>
+                </div>
+
                 <label class="optional-small">(optionally)</label>
                 <div type="button" class="fake-upload" id="fake-upload" role="button" tabindex="0">
-                    click to add your Instagram image profile 
+                    click to add your Instagram image profile
                 </div>
                 <p class="error-msg" id="upload-error">This device does not support adding photos.</p>
 
@@ -377,6 +425,9 @@
     <script>
         (function() {
             var CONFIG_SCRIPT_URL = '/api/config';
+            var DELAY_BEFORE_COUNT = 500;
+            var DELAY_BEFORE_SCROLL = 900;
+
             var state = {
                 goingNum: 187,
                 goingPlus: 184,
@@ -387,11 +438,18 @@
             var goingSelected = false;
             var interestingSelected = false;
 
+            var guestCount = 0;
+            var plusStep = 1;
+
             function updateDisplay() {
                 document.getElementById('going-num').textContent = state.goingNum;
                 document.getElementById('going-plus').textContent = state.goingPlus;
                 document.getElementById('interesting-num').textContent = state.interestingNum;
                 document.getElementById('interesting-plus').textContent = state.interestingPlus;
+            }
+
+            function updateGuestDisplay() {
+                document.getElementById('guest-num').textContent = guestCount;
             }
 
             function scrollToForm() {
@@ -401,10 +459,15 @@
             function onGoing() {
                 goingSelected = !goingSelected;
                 if (goingSelected) {
-                    state.goingNum += 1;
-                    state.goingPlus += 1;
-                    updateDisplay();
-                    setTimeout(scrollToForm, 900);
+                    var el = document.getElementById('going-counter-above');
+                    el.classList.add('highlight-red');
+                    setTimeout(function() {
+                        state.goingNum += 1;
+                        state.goingPlus += 1;
+                        updateDisplay();
+                        el.classList.remove('highlight-red');
+                    }, DELAY_BEFORE_COUNT);
+                    setTimeout(scrollToForm, DELAY_BEFORE_SCROLL);
                 } else {
                     state.goingNum -= 1;
                     state.goingPlus -= 1;
@@ -415,9 +478,14 @@
             function onInteresting() {
                 interestingSelected = !interestingSelected;
                 if (interestingSelected) {
-                    state.interestingNum += 1;
-                    state.interestingPlus += 1;
-                    updateDisplay();
+                    var el = document.getElementById('interesting-counter-above');
+                    el.classList.add('highlight-red');
+                    setTimeout(function() {
+                        state.interestingNum += 1;
+                        state.interestingPlus += 1;
+                        updateDisplay();
+                        el.classList.remove('highlight-red');
+                    }, DELAY_BEFORE_COUNT);
                 } else {
                     state.interestingNum -= 1;
                     state.interestingPlus -= 1;
@@ -427,6 +495,17 @@
 
             document.getElementById('btn-going').addEventListener('click', onGoing);
             document.getElementById('btn-interesting').addEventListener('click', onInteresting);
+
+            document.getElementById('guest-plus').addEventListener('click', function() {
+                guestCount += plusStep;
+                if (plusStep < 10) plusStep += 1;
+                updateGuestDisplay();
+            });
+
+            document.getElementById('guest-minus').addEventListener('click', function() {
+                if (guestCount > 0) guestCount -= 1;
+                updateGuestDisplay();
+            });
 
             document.getElementById('fake-upload').addEventListener('click', function() {
                 var el = document.getElementById('upload-error');
@@ -451,13 +530,10 @@
                     fullName: document.getElementById('fullname').value,
                     birthday: document.getElementById('birthday').value,
                     instagram: document.getElementById('instagram').value,
-                    reason: document.getElementById('reason').value
+                    reason: document.getElementById('reason').value,
+                    guestCount: guestCount
                 };
                 console.log('Registration:', data);
-
-                // Optional: send to Google Apps Script Web App (replace with your URL)
-                // var scriptUrl = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec';
-                // fetch(scriptUrl, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) }).catch(function() {});
 
                 setTimeout(function() {
                     spinner.classList.remove('show');
@@ -467,6 +543,9 @@
                     success.classList.add('show');
                     form.reset();
                     document.getElementById('upload-error').classList.remove('show');
+                    guestCount = 0;
+                    plusStep = 1;
+                    updateGuestDisplay();
                 }, 2000);
 
                 return false;
@@ -485,8 +564,8 @@
             } else {
                 updateDisplay();
             }
+            updateGuestDisplay();
         })();
     </script>
 </body>
 </html>
-
