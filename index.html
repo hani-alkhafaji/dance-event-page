@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <!--
   EVENT REGISTRATION PAGE
-  - You can edit: event title (search for "Register For Latin Party"), initial numbers (187, 184, 34, 31) in the script.
-  - To add profile images: replace the <div class="circle"> content with <img src="YOUR_IMAGE_URL" alt=""> for going-img-1,2,3 and interesting-img-1,2,3.
-  - Google Sheets: This page cannot send data to Google Sheets by itself. Use Google Apps Script (Deploy as Web app) and set the URL below, or use a form service like Formspree.
+  - Event title and numbers load from /api/config (same site). Admin saves to Google Sheet via API.
+  - To add profile images: upload to profiles folder on GitHub (going1.jpg, going2.jpg, etc.).
+  - Google Sheets: Use Google Apps Script Web App URL for form submissions.
 -->
 <html lang="en">
 <head>
@@ -376,7 +376,7 @@
 
     <script>
         (function() {
-            // Initial values – you can edit these in the HTML/script
+            var CONFIG_SCRIPT_URL = '/api/config';
             var state = {
                 goingNum: 187,
                 goingPlus: 184,
@@ -384,8 +384,6 @@
                 interestingPlus: 31
             };
 
-            // Track if the current visitor has selected Going / Interesting
-            // Clicking again will undo their selection (toggle)
             var goingSelected = false;
             var interestingSelected = false;
 
@@ -401,18 +399,13 @@
             }
 
             function onGoing() {
-                // Toggle selection for Going
                 goingSelected = !goingSelected;
-
                 if (goingSelected) {
-                    // User just selected Going: increase counts
                     state.goingNum += 1;
                     state.goingPlus += 1;
                     updateDisplay();
-                    // Scroll shortly after so they see the change
                     setTimeout(scrollToForm, 900);
                 } else {
-                    // User unselected Going: decrease counts back
                     state.goingNum -= 1;
                     state.goingPlus -= 1;
                     updateDisplay();
@@ -420,17 +413,12 @@
             }
 
             function onInteresting() {
-                // Toggle selection for Interesting
                 interestingSelected = !interestingSelected;
-
                 if (interestingSelected) {
-                    // User just selected Interesting: increase counts
                     state.interestingNum += 1;
                     state.interestingPlus += 1;
                     updateDisplay();
-                    // NOTE: For \"Interesting\" we do NOT auto-scroll
                 } else {
-                    // User unselected Interesting: decrease counts back
                     state.interestingNum -= 1;
                     state.interestingPlus -= 1;
                     updateDisplay();
@@ -440,7 +428,6 @@
             document.getElementById('btn-going').addEventListener('click', onGoing);
             document.getElementById('btn-interesting').addEventListener('click', onInteresting);
 
-            // Fake upload: show red message only
             document.getElementById('fake-upload').addEventListener('click', function() {
                 var el = document.getElementById('upload-error');
                 el.classList.add('show');
@@ -449,7 +436,6 @@
                 }, 4000);
             });
 
-            // Submit: show spinner 2 seconds then success
             window.handleSubmit = function(ev) {
                 ev.preventDefault();
                 var btn = document.getElementById('btn-send');
@@ -486,8 +472,21 @@
                 return false;
             };
 
-            updateDisplay();
+            function applyConfig(data) {
+                if (data && data.eventTitle != null) document.querySelector('.event-title').textContent = data.eventTitle;
+                if (data && data.goingNum != null) state.goingNum = Number(data.goingNum);
+                if (data && data.goingPlus != null) state.goingPlus = Number(data.goingPlus);
+                if (data && data.interestingNum != null) state.interestingNum = Number(data.interestingNum);
+                if (data && data.interestingPlus != null) state.interestingPlus = Number(data.interestingPlus);
+                updateDisplay();
+            }
+            if (CONFIG_SCRIPT_URL) {
+                fetch(CONFIG_SCRIPT_URL).then(function(r) { return r.json(); }).then(applyConfig).catch(function() { updateDisplay(); });
+            } else {
+                updateDisplay();
+            }
         })();
     </script>
 </body>
 </html>
+
