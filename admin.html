@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -33,6 +32,7 @@
         .login-box .error { color: #ff4444; font-size: 14px; margin-top: 8px; display: none; }
         .login-box .error.show { display: block; }
         .hint { font-size: 12px; color: #888; margin-top: 20px; }
+        .hint a { color: #00C896; }
     </style>
 </head>
 <body>
@@ -69,13 +69,14 @@
             <button type="submit" class="btn btn-primary" id="save-btn">Save changes</button>
         </form>
         <p id="msg" class="msg"></p>
-        <p class="hint">To change the 6 profile images, upload new files to the <strong>profiles</strong> folder on GitHub.</p>
+        <p class="hint">To change the 6 profile images, upload new files to the <strong>profiles</strong> folder on GitHub (same names: going1.jpg, going2.jpg, etc.). See HOW_TO_UPLOAD_IMAGES_ON_GITHUB.md</p>
     </div>
 
     <script>
         (function() {
+            // ========== SET THESE TO MATCH YOUR APPS SCRIPT ==========
             var CONFIG_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwaVksAPzPccOyjzXkISkl-87iBpnEdfQXPu6QVASQgoS_Fgo_Nk81g3bdsRtfK446F-w/exec';
-            var ADMIN_PASSWORD = '7602';
+            var ADMIN_PASSWORD = '7602';  // Same as adminSecret in Apps Script
 
             var loginBox = document.getElementById('login-box');
             var adminPanel = document.getElementById('admin-panel');
@@ -91,7 +92,10 @@
                 msgEl.className = 'msg ' + (isError ? 'error' : 'success');
                 msgEl.style.display = 'block';
             }
-            function hideMsg() { msgEl.style.display = 'none'; }
+
+            function hideMsg() {
+                msgEl.style.display = 'none';
+            }
 
             loginBtn.addEventListener('click', function() {
                 if (loginPassword.value === ADMIN_PASSWORD) {
@@ -99,8 +103,11 @@
                     adminPanel.style.display = 'block';
                     loginError.classList.remove('show');
                     loadConfig();
-                } else { loginError.classList.add('show'); }
+                } else {
+                    loginError.classList.add('show');
+                }
             });
+
             loginPassword.addEventListener('keydown', function(e) {
                 if (e.key === 'Enter') loginBtn.click();
             });
@@ -116,7 +123,9 @@
                         document.getElementById('interestingNum').value = data.interestingNum != null ? data.interestingNum : 34;
                         document.getElementById('interestingPlus').value = data.interestingPlus != null ? data.interestingPlus : 31;
                     })
-                    .catch(function() { showMsg('Could not load config. Check CONFIG_SCRIPT_URL.', true); })
+                    .catch(function() {
+                        showMsg('Could not load config. Check CONFIG_SCRIPT_URL and that your Config Apps Script is deployed.', true);
+                    })
                     .finally(function() { saveBtn.disabled = false; });
             }
 
@@ -132,18 +141,28 @@
                     interestingNum: parseInt(document.getElementById('interestingNum').value, 10) || 0,
                     interestingPlus: parseInt(document.getElementById('interestingPlus').value, 10) || 0
                 };
-                fetch(CONFIG_SCRIPT_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                })
-                    .then(function(r) { return r.text(); })
-                    .then(function(text) {
-                        if (text && text.toLowerCase().indexOf('ok') !== -1) showMsg('Saved.');
-                        else showMsg('Save may have failed.', true);
-                    })
-                    .catch(function() { showMsg('Network error.', true); })
-                    .finally(function() { saveBtn.disabled = false; });
+                var iframe = document.getElementById('save-frame');
+                if (!iframe) {
+                    iframe = document.createElement('iframe');
+                    iframe.name = 'save-frame';
+                    iframe.id = 'save-frame';
+                    iframe.style.display = 'none';
+                    document.body.appendChild(iframe);
+                }
+                var form = document.createElement('form');
+                form.action = CONFIG_SCRIPT_URL;
+                form.method = 'POST';
+                form.target = 'save-frame';
+                form.style.display = 'none';
+                var input = document.createElement('input');
+                input.name = 'data';
+                input.value = JSON.stringify(payload);
+                form.appendChild(input);
+                document.body.appendChild(form);
+                form.submit();
+                document.body.removeChild(form);
+                showMsg('Saved. Your event page will show the new title and numbers.');
+                saveBtn.disabled = false;
             });
         })();
     </script>
