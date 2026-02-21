@@ -272,8 +272,97 @@
             resize: vertical;
         }
 
-        input[type="date"].form-field {
+        .birthday-trigger {
+            cursor: pointer;
             color: #333;
+        }
+
+        .birthday-trigger.placeholder {
+            color: #666;
+        }
+
+        .picker-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 9999;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .picker-overlay.show {
+            display: flex;
+        }
+
+        .picker-sheet {
+            width: 100%;
+            max-width: 420px;
+            background: #f0f0f0;
+            border-radius: 16px 16px 0 0;
+            padding-bottom: env(safe-area-inset-bottom, 20px);
+            max-height: 70vh;
+        }
+
+        .picker-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 16px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .picker-header button {
+            background: none;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            color: #0066FF;
+            font-weight: 600;
+        }
+
+        .picker-header .picker-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .picker-wheels {
+            display: flex;
+            justify-content: center;
+            gap: 0;
+            padding: 12px 0 20px;
+            -webkit-mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
+            mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
+        }
+
+        .picker-wheel {
+            flex: 1;
+            max-width: 33%;
+            overflow-y: auto;
+            overflow-x: hidden;
+            height: 180px;
+            scroll-snap-type: y mandatory;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .picker-wheel::-webkit-scrollbar {
+            display: none;
+        }
+
+        .picker-wheel-inner {
+            padding: 72px 0;
+        }
+
+        .picker-wheel-item {
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: #333;
+            scroll-snap-align: center;
+            scroll-snap-stop: always;
         }
 
         .btn-send {
@@ -418,15 +507,23 @@
                 </div>
                 <p class="error-msg" id="upload-error">This device does not support adding photos.</p>
 
-                <input
-                    type="text"
-                    class="form-field"
-                    id="birthday"
-                    placeholder="Your Birthday"
-                    required
-                    onfocus="this.type='date'; this.placeholder='';"
-                    onblur="if(!this.value){ this.type='text'; this.placeholder='Your Birthday)'; }"
-                >
+                <input type="hidden" id="birthday" name="birthday" required>
+                <div class="form-field birthday-trigger placeholder" id="birthday-trigger" tabindex="0" role="button" aria-label="Select birthday">Your Birthday</div>
+
+                <div class="picker-overlay" id="birthday-picker-overlay">
+                    <div class="picker-sheet">
+                        <div class="picker-header">
+                            <button type="button" id="picker-cancel">Cancel</button>
+                            <span class="picker-title">Date of birth</span>
+                            <button type="button" id="picker-done">Done</button>
+                        </div>
+                        <div class="picker-wheels">
+                            <div class="picker-wheel" id="wheel-month"></div>
+                            <div class="picker-wheel" id="wheel-day"></div>
+                            <div class="picker-wheel" id="wheel-year"></div>
+                        </div>
+                    </div>
+                </div>
 
                 <input type="text" class="form-field" id="instagram" placeholder="Instagram Username to Send you confirmation?" required>
 
@@ -447,7 +544,7 @@
     <script>
         (function() {
             var CONFIG_SCRIPT_URL = '/api/config';
-            var REGISTRATION_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxFNg1-Cjdi1v_K2tc6OOR_Tj0MkGvwpwYuZ3eHryUMKy3u-vyN47AmhziP8Miv_VOrcg/exec';
+            var REGISTRATION_SCRIPT_URL = '';
             var DELAY_BEFORE_COUNT = 500;
             var DELAY_BEFORE_SCROLL = 900;
 
@@ -600,8 +697,96 @@
                 img.onload = markLoaded;
                 markLoaded();
             });
+
+            (function birthdayPicker() {
+                var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+                var trigger = document.getElementById('birthday-trigger');
+                var hiddenInput = document.getElementById('birthday');
+                var overlay = document.getElementById('birthday-picker-overlay');
+                var wheelMonth = document.getElementById('wheel-month');
+                var wheelDay = document.getElementById('wheel-day');
+                var wheelYear = document.getElementById('wheel-year');
+                var curYear = new Date().getFullYear();
+                var yearFrom = 1940;
+                var yearTo = curYear;
+
+                function fillWheel(container, values) {
+                    var inner = document.createElement('div');
+                    inner.className = 'picker-wheel-inner';
+                    values.forEach(function(v) {
+                        var div = document.createElement('div');
+                        div.className = 'picker-wheel-item';
+                        div.textContent = v.text != null ? v.text : v;
+                        div.dataset.value = v.value != null ? v.value : v;
+                        inner.appendChild(div);
+                    });
+                    container.appendChild(inner);
+                }
+
+                fillWheel(wheelMonth, months.map(function(m, i) { return { text: m, value: String(i + 1).padStart(2, '0'); }; }));
+                fillWheel(wheelDay, Array.from({ length: 31 }, function(_, i) { var d = i + 1; return { text: d, value: String(d).padStart(2, '0'); }; }));
+                fillWheel(wheelYear, Array.from({ length: yearTo - yearFrom + 1 }, function(_, i) { var y = yearTo - i; return { text: y, value: String(y); }; }));
+
+                function getSelected(container) {
+                    var inner = container.querySelector('.picker-wheel-inner');
+                    if (!inner) return null;
+                    var scrollTop = container.scrollTop;
+                    var itemHeight = 36;
+                    var idx = Math.round(scrollTop / itemHeight);
+                    var items = container.querySelectorAll('.picker-wheel-item');
+                    idx = Math.max(0, Math.min(idx, items.length - 1));
+                    return items[idx] ? items[idx].dataset.value : null;
+                }
+
+                function setWheelScroll(container, value) {
+                    var items = container.querySelectorAll('.picker-wheel-item');
+                    for (var i = 0; i < items.length; i++) {
+                        if (items[i].dataset.value === value) {
+                            container.scrollTop = i * 36;
+                            return;
+                        }
+                    }
+                }
+
+                function openPicker() {
+                    var val = hiddenInput.value;
+                    if (val) {
+                        var parts = val.split('-');
+                        if (parts.length === 3) {
+                            setWheelScroll(wheelMonth, parts[1]);
+                            setWheelScroll(wheelDay, parts[2]);
+                            setWheelScroll(wheelYear, parts[0]);
+                        }
+                    } else {
+                        setWheelScroll(wheelYear, String(curYear - 25));
+                    }
+                    overlay.classList.add('show');
+                }
+
+                function closePicker() {
+                    overlay.classList.remove('show');
+                }
+
+                function onDone() {
+                    var m = getSelected(wheelMonth);
+                    var d = getSelected(wheelDay);
+                    var y = getSelected(wheelYear);
+                    if (m && d && y) {
+                        var dateStr = y + '-' + m + '-' + d;
+                        hiddenInput.value = dateStr;
+                        trigger.textContent = d + ' ' + months[parseInt(m, 10) - 1] + ' ' + y;
+                        trigger.classList.remove('placeholder');
+                    }
+                    closePicker();
+                }
+
+                trigger.addEventListener('click', openPicker);
+                trigger.addEventListener('keydown', function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openPicker(); } });
+                document.getElementById('picker-cancel').addEventListener('click', closePicker);
+                document.getElementById('picker-done').addEventListener('click', onDone);
+                overlay.addEventListener('click', function(e) { if (e.target === overlay) closePicker(); });
+            })();
         })();
     </script>
 </body>
 </html>
-
