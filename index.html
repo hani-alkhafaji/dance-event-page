@@ -1,12 +1,8 @@
 <!DOCTYPE html>
 <!--
-  EVENT REGISTRATION PAGE — الموقع الأول
-  - Event title and numbers load from /api/config.
-  - Going/Interesting: text turns red, then number updates; Going scrolls to form.
-  - Guest counter: + and - buttons.
-  - Form: fullName, birthday, instagram, reason (سبب الحضور); data sent to REGISTRATION_SCRIPT_URL.
-  - Images: going1.jpg, going2.jpg, going3.jpg, interesting1.jpg, interesting2.jpg, interesting3.jpg (e.g. in profiles/ on GitHub).
-  - إصلاح الرقم الضخم: استخدام safeNum عند تطبيق الإعدادات من الورقة.
+  EVENT REGISTRATION PAGE — Site 1 (same as Site 2, but with "reason for joining" box).
+  - Event title and numbers from /api/config.
+  - Form sends to REGISTRATION_SCRIPT_URL (set your Site 1 Google Apps Script URL below).
 -->
 <html lang="en">
 <head>
@@ -258,7 +254,7 @@
 
         .error-msg {
             display: none;
-            color: #FFFFFF;
+            color: #ff4444;
             font-size: 14px;
             margin-top: -8px;
             margin-bottom: 12px;
@@ -271,6 +267,11 @@
         textarea.form-field {
             min-height: 80px;
             resize: vertical;
+        }
+
+        input[type="date"].form-field,
+        input[type="text"].form-field {
+            color: #333;
         }
 
         .btn-send {
@@ -334,19 +335,10 @@
         }
 
         @media (max-width: 480px) {
-            .event-title {
-                font-size: 22px;
-            }
-            .btn-action {
-                font-size: 15px;
-                padding: 12px 16px;
-            }
-            .two-columns {
-                gap: 16px;
-            }
-            .column {
-                max-width: 140px;
-            }
+            .event-title { font-size: 22px; }
+            .btn-action { font-size: 15px; padding: 12px 16px; }
+            .two-columns { gap: 16px; }
+            .column { max-width: 140px; }
         }
     </style>
 </head>
@@ -422,15 +414,13 @@
                 <div type="button" class="fake-upload" id="fake-upload" role="button" tabindex="0">
                     click to add your Instagram image profile
                 </div>
-                <p class="error-msg" id="upload-error">
-                    To add Instagram profile photo you need to be logged in first. If you are not a member you can ignore and continue.
-                </p>
+                <p class="error-msg" id="upload-error">to add Instagram profile photo you need to be logged in first. if you are not a member of Our website you can ignore adding profile photos and Continue to fill in the data and Send it.</p>
 
-                <input type="text" class="form-field" id="birthday" placeholder="Your Birthday (e.g. 15/03/1990)" required>
+                <input type="text" class="form-field" id="birthday" placeholder="Your Birthday (e.g. 15/03/1990 or type freely)" required>
 
                 <input type="text" class="form-field" id="instagram" placeholder="Instagram Username to Send you confirmation?" required>
 
-                <!-- صندوق سبب الحضور — الموقع الأول فقط -->
+                <!-- Site 1 only: reason for joining -->
                 <textarea class="form-field" id="reason" placeholder="Why would you like to join?" rows="3"></textarea>
 
                 <button type="submit" class="btn-send" id="btn-send">
@@ -462,17 +452,9 @@
 
             var goingSelected = false;
             var interestingSelected = false;
+
             var guestCount = 0;
             var plusStep = 1;
-
-            /**
-             * منع ظهور الرقم الضخم عندما تكون الخلية في جوجل شيت بتنسيق تاريخ بالخطأ.
-             */
-            function safeNum(n) {
-                var v = Number(n);
-                if (isNaN(v) || v > 999999 || v < 0) return 0;
-                return Math.round(v);
-            }
 
             function updateDisplay() {
                 document.getElementById('going-num').textContent = state.goingNum;
@@ -492,7 +474,8 @@
             function onGoing() {
                 goingSelected = !goingSelected;
                 if (goingSelected) {
-                    document.getElementById('going-counter-above').classList.add('highlight-red');
+                    var el = document.getElementById('going-counter-above');
+                    el.classList.add('highlight-red');
                     setTimeout(function() {
                         state.goingNum += 1;
                         state.goingPlus += 1;
@@ -510,7 +493,8 @@
             function onInteresting() {
                 interestingSelected = !interestingSelected;
                 if (interestingSelected) {
-                    document.getElementById('interesting-counter-above').classList.add('highlight-red');
+                    var el = document.getElementById('interesting-counter-above');
+                    el.classList.add('highlight-red');
                     setTimeout(function() {
                         state.interestingNum += 1;
                         state.interestingPlus += 1;
@@ -562,12 +546,7 @@
                 };
 
                 if (REGISTRATION_SCRIPT_URL) {
-                    fetch(REGISTRATION_SCRIPT_URL, {
-                        method: 'POST',
-                        mode: 'no-cors',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(data)
-                    }).catch(function() {});
+                    fetch(REGISTRATION_SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }).catch(function() {});
                 }
 
                 setTimeout(function() {
@@ -587,29 +566,23 @@
             };
 
             function applyConfig(data) {
-                if (data && data.eventTitle != null) {
-                    document.querySelector('.event-title').textContent = data.eventTitle;
-                }
-                if (data && data.goingNum != null) state.goingNum = safeNum(data.goingNum);
-                if (data && data.goingPlus != null) state.goingPlus = safeNum(data.goingPlus);
-                if (data && data.interestingNum != null) state.interestingNum = safeNum(data.interestingNum);
-                if (data && data.interestingPlus != null) state.interestingPlus = safeNum(data.interestingPlus);
+                if (data && data.eventTitle != null) document.querySelector('.event-title').textContent = data.eventTitle;
+                if (data && data.goingNum != null) state.goingNum = Number(data.goingNum);
+                if (data && data.goingPlus != null) state.goingPlus = Number(data.goingPlus);
+                if (data && data.interestingNum != null) state.interestingNum = Number(data.interestingNum);
+                if (data && data.interestingPlus != null) state.interestingPlus = Number(data.interestingPlus);
                 updateDisplay();
             }
-
             if (CONFIG_SCRIPT_URL) {
                 fetch(CONFIG_SCRIPT_URL).then(function(r) { return r.json(); }).then(applyConfig).catch(function() { updateDisplay(); });
             } else {
                 updateDisplay();
             }
-
             updateGuestDisplay();
 
             document.querySelectorAll('.circle img').forEach(function(img) {
                 function markLoaded() {
-                    if (img.complete && img.naturalWidth > 0) {
-                        img.closest('.circle').classList.add('has-image');
-                    }
+                    if (img.complete && img.naturalWidth > 0) img.closest('.circle').classList.add('has-image');
                 }
                 img.onload = markLoaded;
                 markLoaded();
@@ -618,3 +591,4 @@
     </script>
 </body>
 </html>
+
