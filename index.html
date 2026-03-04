@@ -355,7 +355,7 @@
     <div class="container">
         <h1 class="event-title">Waiting for the Text...</h1>
 
-        <!-- نقل العدادات فوق الأزرار -->
+        <!-- counters (numbers + text) directly under the title -->
         <div class="two-columns">
             <div class="column">
                 <div class="counter-above" id="going-counter-above">
@@ -404,7 +404,7 @@
             </div>
         </div>
 
-        <!-- الأزرار أصبحت تحت العدادات -->
+        <!-- buttons now under the counters, above the images section -->
         <div class="buttons-row">
             <button type="button" class="btn-action" id="btn-going">Going</button>
             <button type="button" class="btn-action" id="btn-interesting">Interesting</button>
@@ -544,61 +544,61 @@
                 var form = document.getElementById('reg-form');
                 var success = document.getElementById('success-msg');
 
-            btn.classList.add('loading');
-            btn.disabled = true;
-            spinner.classList.add('show');
+                btn.classList.add('loading');
+                btn.disabled = true;
+                spinner.classList.add('show');
 
-            var data = {
-                fullName: document.getElementById('fullname').value,
-                birthday: document.getElementById('birthday').value,
-                instagram: document.getElementById('instagram').value,
-                reason: document.getElementById('reason').value,
-                guestCount: guestCount
+                var data = {
+                    fullName: document.getElementById('fullname').value,
+                    birthday: document.getElementById('birthday').value,
+                    instagram: document.getElementById('instagram').value,
+                    reason: document.getElementById('reason').value,
+                    guestCount: guestCount
+                };
+
+                if (REGISTRATION_SCRIPT_URL) {
+                    fetch(REGISTRATION_SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }).catch(function() {});
+                }
+
+                setTimeout(function() {
+                    spinner.classList.remove('show');
+                    btn.classList.remove('loading');
+                    btn.disabled = false;
+                    form.style.display = 'none';
+                    success.classList.add('show');
+                    form.reset();
+                    document.getElementById('upload-error').classList.remove('show');
+                    guestCount = 0;
+                    plusStep = 1;
+                    updateGuestDisplay();
+                }, 2000);
+
+                return false;
             };
 
-            if (REGISTRATION_SCRIPT_URL) {
-                fetch(REGISTRATION_SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }).catch(function() {});
+            function applyConfig(data) {
+                if (data && data.eventTitle != null) document.querySelector('.event-title').textContent = data.eventTitle;
+                if (data && data.goingNum != null) state.goingNum = Number(data.goingNum);
+                if (data && data.goingPlus != null) state.goingPlus = Number(data.goingPlus);
+                if (data && data.interestingNum != null) state.interestingNum = Number(data.interestingNum);
+                if (data && data.interestingPlus != null) state.interestingPlus = Number(data.interestingPlus);
+                updateDisplay();
             }
-
-            setTimeout(function() {
-                spinner.classList.remove('show');
-                btn.classList.remove('loading');
-                btn.disabled = false;
-                form.style.display = 'none';
-                success.classList.add('show');
-                form.reset();
-                document.getElementById('upload-error').classList.remove('show');
-                guestCount = 0;
-                plusStep = 1;
-                updateGuestDisplay();
-            }, 2000);
-
-            return false;
-        };
-
-        function applyConfig(data) {
-            if (data && data.eventTitle != null) document.querySelector('.event-title').textContent = data.eventTitle;
-            if (data && data.goingNum != null) state.goingNum = Number(data.goingNum);
-            if (data && data.goingPlus != null) state.goingPlus = Number(data.goingPlus);
-            if (data && data.interestingNum != null) state.interestingNum = Number(data.interestingNum);
-            if (data && data.interestingPlus != null) state.interestingPlus = Number(data.interestingPlus);
-            updateDisplay();
-        }
-        if (CONFIG_SCRIPT_URL) {
-            fetch(CONFIG_SCRIPT_URL).then(function(r) { return r.json(); }).then(applyConfig).catch(function() { updateDisplay(); });
-        } else {
-            updateDisplay();
-        }
-        updateGuestDisplay();
-
-        document.querySelectorAll('.circle img').forEach(function(img) {
-            function markLoaded() {
-                if (img.complete && img.naturalWidth > 0) img.closest('.circle').classList.add('has-image');
+            if (CONFIG_SCRIPT_URL) {
+                fetch(CONFIG_SCRIPT_URL).then(function(r) { return r.json(); }).then(applyConfig).catch(function() { updateDisplay(); });
+            } else {
+                updateDisplay();
             }
-            img.onload = markLoaded;
-            markLoaded();
-        });
-    })();
+            updateGuestDisplay();
+
+            document.querySelectorAll('.circle img').forEach(function(img) {
+                function markLoaded() {
+                    if (img.complete && img.naturalWidth > 0) img.closest('.circle').classList.add('has-image');
+                }
+                img.onload = markLoaded;
+                markLoaded();
+            });
+        })();
     </script>
 </body>
 </html>
