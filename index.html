@@ -376,49 +376,6 @@
             <button type="button" class="btn-action" id="btn-interesting">Interesting</button>
         </div>
 
-        <!-- الصور الست + الأرقام تحت الصور (كما كانت) -->
-        <div class="two-columns">
-            <div class="column">
-                <div class="profile-stack">
-                    <div class="circle" id="going-img-1">
-                        <img src="going1.jpg" alt="" onerror="this.style.display='none'">
-                        <span class="circle-placeholder">Add Image</span>
-                    </div>
-                    <div class="circle" id="going-img-2">
-                        <img src="going2.jpg" alt="" onerror="this.style.display='none'">
-                        <span class="circle-placeholder">Add Image</span>
-                    </div>
-                    <div class="circle" id="going-img-3">
-                        <img src="going3.jpg" alt="" onerror="this.style.display='none'">
-                        <span class="circle-placeholder">Add Image</span>
-                    </div>
-                </div>
-                <div class="counter-below">
-                    <span id="going-plus">...</span>+
-                </div>
-            </div>
-
-            <div class="column">
-                <div class="profile-stack">
-                    <div class="circle" id="interesting-img-1">
-                        <img src="interesting1.jpg" alt="" onerror="this.style.display='none'">
-                        <span class="circle-placeholder">Add Image</span>
-                    </div>
-                    <div class="circle" id="interesting-img-2">
-                        <img src="interesting2.jpg" alt="" onerror="this.style.display='none'">
-                        <span class="circle-placeholder">Add Image</span>
-                    </div>
-                    <div class="circle" id="interesting-img-3">
-                        <img src="interesting3.jpg" alt="" onerror="this.style.display='none'">
-                        <span class="circle-placeholder">Add Image</span>
-                    </div>
-                </div>
-                <div class="counter-below">
-                    <span id="interesting-plus">...</span>+
-                </div>
-            </div>
-        </div>
-
         <section class="form-section" id="form-section">
             <form id="reg-form" onsubmit="return handleSubmit(event)">
                 <input type="text" class="form-field" id="fullname" placeholder="Your Full name?" required>
@@ -429,12 +386,6 @@
                     <span class="guest-num" id="guest-num">0</span>
                     <button type="button" class="guest-btn" id="guest-plus" aria-label="Plus">+</button>
                 </div>
-
-                <label class="optional-small">(optionally)</label>
-                <div type="button" class="fake-upload" id="fake-upload" role="button" tabindex="0">
-                    click to add your Instagram image profile
-                </div>
-                <p class="error-msg" id="upload-error">to add Instagram profile photo you need to be logged in first. if you are not a member of Our website you can ignore adding profile photos and Continue to fill in the data and Send it.</p>
 
                 <input type="text" class="form-field" id="birthday" placeholder="Your Birthday (Example 15/03/1990 )" required>
 
@@ -478,9 +429,7 @@
 
             function updateDisplay() {
                 document.getElementById('going-num').textContent = state.goingNum;
-                document.getElementById('going-plus').textContent = state.goingPlus;
                 document.getElementById('interesting-num').textContent = state.interestingNum;
-                document.getElementById('interesting-plus').textContent = state.interestingPlus;
             }
 
             function updateGuestDisplay() {
@@ -542,10 +491,6 @@
                 updateGuestDisplay();
             });
 
-            document.getElementById('fake-upload').addEventListener('click', function() {
-                document.getElementById('upload-error').classList.add('show');
-            });
-
             window.handleSubmit = function(ev) {
                 ev.preventDefault();
                 var btn = document.getElementById('btn-send');
@@ -576,7 +521,6 @@
                     form.style.display = 'none';
                     success.classList.add('show');
                     form.reset();
-                    document.getElementById('upload-error').classList.remove('show');
                     guestCount = 0;
                     plusStep = 1;
                     updateGuestDisplay();
@@ -599,14 +543,6 @@
                 updateDisplay();
             }
             updateGuestDisplay();
-
-            document.querySelectorAll('.circle img').forEach(function(img) {
-                function markLoaded() {
-                    if (img.complete && img.naturalWidth > 0) img.closest('.circle').classList.add('has-image');
-                }
-                img.onload = markLoaded;
-                markLoaded();
-            });
         })();
     </script>
 </body>
