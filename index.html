@@ -349,6 +349,65 @@
         #interesting-num {
             font-size: 24px;   /* bigger numbers */
         }
+
+        /* Follow overlay (added) */
+        .follow-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.55);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            z-index: 9999;
+        }
+
+        .follow-overlay.show {
+            display: flex;
+        }
+
+        .follow-box {
+            width: 100%;
+            max-width: 420px;
+            background: #FFFFFF;
+            color: #0f172a;
+            border-radius: 14px;
+            padding: 18px 16px;
+            box-shadow: 0 18px 50px rgba(0,0,0,0.35);
+            border: 1px solid rgba(0,0,0,0.08);
+        }
+
+        .follow-title {
+            font-size: 16px;
+            font-weight: 800;
+            margin-bottom: 10px;
+            color: #0f172a;
+        }
+
+        .follow-text {
+            font-size: 14px;
+            line-height: 1.45;
+            color: rgba(15,23,42,0.9);
+            margin-bottom: 14px;
+        }
+
+        .follow-handle {
+            font-weight: 800;
+            color: #111827;
+        }
+
+        .follow-cta {
+            display: inline-block;
+            width: 100%;
+            text-align: center;
+            background: #00C896;
+            color: #FFFFFF;
+            text-decoration: none;
+            font-weight: 800;
+            border-radius: 12px;
+            padding: 14px 16px;
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
@@ -406,10 +465,27 @@
         </section>
     </div>
 
+    <!-- Follow popup (added) -->
+    <div class="follow-overlay" id="follow-overlay" role="dialog" aria-modal="true" aria-labelledby="follow-title">
+        <div class="follow-box">
+            <div class="follow-title" id="follow-title">Instagram confirmation</div>
+            <div class="follow-text">
+                We will send your booking confirmation on Instagram via
+                <span class="follow-handle">meetup.vienna.events</span>.
+                Please follow
+                <span class="follow-handle">meetup.vienna.events</span>
+                so we can message you (Instagram doesn’t allow messages to people who don’t follow the page).
+            </div>
+            <a class="follow-cta" href="https://www.instagram.com/meetup.vienna.events/" target="_blank" rel="noopener noreferrer">
+                Go to Instagram: meetup.vienna.events
+            </a>
+        </div>
+    </div>
+
     <script>
         (function() {
             var CONFIG_SCRIPT_URL = '/api/config';
-            var REGISTRATION_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzMmvxOaaHEg2nDzRk5sF2vnggO4HbCJcM9S3m-_gDN-UvptgYV0SKCCGg9BsJy9GRs/exec';
+            var REGISTRATION_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxbUyjddTwNhrNUNs8s9U0x3QuH8LgNYelm9C_HGBM0PUyaTfMFI_4cX72pvIsQ9QY/exec';
 
             var DELAY_BEFORE_COUNT = 500;
             var DELAY_BEFORE_SCROLL = 900;
@@ -491,6 +567,10 @@
                 updateGuestDisplay();
             });
 
+            function showFollowOverlay() {
+                document.getElementById('follow-overlay').classList.add('show');
+            }
+
             window.handleSubmit = function(ev) {
                 ev.preventDefault();
                 var btn = document.getElementById('btn-send');
@@ -524,6 +604,9 @@
                     guestCount = 0;
                     plusStep = 1;
                     updateGuestDisplay();
+
+                    /* show popup (added) */
+                    showFollowOverlay();
                 }, 2000);
 
                 return false;
